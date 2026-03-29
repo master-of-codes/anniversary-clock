@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Our Love Journey</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;400;600&display=swap');
+
+        :root {
+            --bg-dark: #0f0c29;
+            --bg-mid: #302b63;
+            --bg-light: #24243e;
+            --accent: #ff4d85;
+            --accent-glow: rgba(255, 77, 133, 0.6);
+            --text-main: #ffffff;
+            --text-muted: #e0e0e0;
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-dark), var(--bg-mid), var(--bg-light));
+            background-size: 400% 400%;
+            animation: gradientBg 15s ease infinite;
+            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        @keyframes gradientBg {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Canvases */
+        canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #confetti-canvas { z-index: 100; }
+
+        /* Common Header & Carousel (sticky visual) */
+        .hero-section {
+            position: relative;
+            width: 100%;
+            z-index: 15;
+            background: transparent;
+            backdrop-filter: blur(2px);
+            padding: 12px 0 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 0;
+        }
+
+        .header {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .arc-svg {
+            width: 240px;
+            height: 60px;
+            overflow: visible;
+        }
+
+        .arc-text {
+            font-family: 'Dancing Script', cursive;
+            font-size: 26px;
+            fill: var(--text-main);
+            text-shadow: 0 0 10px var(--accent-glow);
+            letter-spacing: 1px;
+        }
+
+        .love-icon {
+            font-size: 24px;
+            animation: heartBeat 1.5s infinite;
+            filter: drop-shadow(0 0 10px var(--accent));
+            margin-top: -8px;
+        }
+
+        @keyframes heartBeat {
+            0%, 40%, 100% { transform: scale(1); }
+            20%, 60% { transform: scale(1.2); }
+        }
+
+        .couple-name {
+            font-family: 'Dancing Script', cursive;
+            font-size: 28px;
+            margin-top: 2px;
+            background: -webkit-linear-gradient(45deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 77, 133, 0.4);
+        }
+
+        /* 3D Carousel */
+        .scene {
+            width: 100%;
+            height: 150px;
+            perspective: 800px;
+            position: relative;
+            margin: 5px 0 5px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            touch-action: none;
+        }
+
+        .carousel {
+            width: 80px;
+            height: 120px;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.1s linear;
+        }
+
+        .carousel__cell {
+            position: absolute;
+            width: 80px;
+            height: 120px;
+            left: 0;
+            top: 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5), 0 0 10px var(--glass-border) inset;
+            border: 1px solid var(--glass-border);
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .carousel__cell img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            user-select: none;
+            -webkit-user-drag: none;
+            pointer-events: none;
+        }
+
+        /* MAIN SCROLLABLE CONTENT: Normal page flow, but each panel is a block */
+        .content-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .panel {
+            width: 100%;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            will-change: opacity;
+        }
+
+        .panel.hidden-panel {
+            display: none;
+        }
+
+        /* Counters Grid */
+        .counters-container {
+            width: 92%;
+            max-width: 900px;
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .counters-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .counter-box {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 10px 8px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .counter-box:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .counter-num {
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--accent);
+            text-shadow: 0 0 10px var(--accent-glow);
+            transition: font-size 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .counter-label {
+            font-size: 8px;
+            letter-spacing: 1.5px;
+            margin-top: 4px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .anniversary-header {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 300;
+            letter-spacing: 4px;
+            font-size: 22px;
+            text-align: center;
+            margin-top: 15px;
+            margin-bottom: 15px;
+            background: -webkit-linear-gradient(45deg, #fff, var(--accent));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 77, 133, 0.4);
+        }
+
+        /* Fixed Nav Button (always at bottom last position but fixed on viewport) */
+        .glass-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+            padding: 10px 20px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            outline: none;
+            z-index: 200;
+        }
+
+        .glass-btn:hover, .glass-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 20px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+
+        #nav-btn {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: auto;
+            white-space: nowrap;
+        }
+
+        #install-btn {
+            position: fixed;
+            bottom: 95px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            white-space: nowrap;
+        }
+
+        /* responsive spacings - no unnecessary gaps */
+        @media (min-width: 480px) {
+            .arc-svg { width: 280px; height: 80px; }
+            .arc-text { font-size: 32px; }
+            .couple-name { font-size: 34px; }
+            .scene { height: 190px; }
+            .carousel, .carousel__cell { width: 100px; height: 150px; }
+            .counters-grid { gap: 15px; }
+            .counter-box { padding: 12px 8px; }
+            .counter-num { font-size: 26px; }
+            .counter-label { font-size: 9px; }
+            .anniversary-header { font-size: 26px; }
+        }
+
+        @media (min-width: 768px) {
+            .counters-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
+            .scene { height: 240px; }
+            .carousel, .carousel__cell { width: 120px; height: 180px; }
+            .counter-num { font-size: 32px; }
+            .counter-label { font-size: 10px; }
+            .anniversary-header { font-size: 30px; margin-top: 20px; }
+        }
+
+        @media (min-width: 1024px) {
+            .counters-grid { grid-template-columns: repeat(6, 1fr); }
+            .carousel, .carousel__cell { width: 140px; height: 210px; }
+            .scene { height: 290px; }
+            .arc-svg { width: 380px; }
+            .arc-text { font-size: 38px; }
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+
+        .modal-overlay.show { opacity: 1; pointer-events: all; }
+
+        .modal-content {
+            background: linear-gradient(135deg, rgba(20,20,30,0.95), rgba(40,30,50,0.95));
+            border: 1px solid var(--accent-glow);
+            border-radius: 28px;
+            padding: 30px 40px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 40px var(--accent-glow);
+        }
+
+        .modal-overlay.show .modal-content { transform: scale(1); }
+
+        .modal-title {
+            font-family: 'Dancing Script', cursive;
+            font-size: 48px;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            text-shadow: 0 0 15px var(--accent);
+        }
+
+        .modal-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        .modal-btn:hover { background: #ff2a6d; transform: scale(1.02); }
+
+        /* no extra spaces, smooth scrolling */
+        body {
+            scroll-behavior: smooth;
+        }
+
+        .content-wrapper {
+            padding-bottom: 90px;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Fixed common top: header + carousel -->
+    <div class="hero-section">
+        <div class="header">
+            <svg class="arc-svg" viewBox="0 0 300 100">
+                <path id="curve" d="M 20 80 Q 150 10 280 80" fill="transparent"/>
+                <text class="arc-text"><textPath href="#curve" startOffset="50%" text-anchor="middle" id="years-text">Years Of Journey</textPath></text>
+            </svg>
+            <div class="love-icon">❤️</div>
+            <div class="couple-name">You & Me</div>
+        </div>
+        <div class="scene">
+            <div class="carousel" id="carousel"></div>
+        </div>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT: two panels toggled via visibility, no extra nested scrolling, normal document flow -->
+    <div class="content-wrapper">
+        <!-- Journey Panel -->
+        <div id="journey-panel" class="panel">
+            <div class="counters-container">
+                <div class="counters-grid" id="journey-boxes"></div>
+            </div>
+            <div style="height: 5px;"></div>
+        </div>
+
+        <!-- Anniversary Panel (initially hidden) -->
+        <div id="anniversary-panel" class="panel hidden-panel">
+            <h2 class="anniversary-header">✨ OUR NEXT ANNIVERSARY ✨</h2>
+            <div class="counters-container">
+                <div class="counters-grid" id="countdown-boxes"></div>
+            </div>
+            <div style="height: 5px;"></div>
+        </div>
+    </div>
+
+    <!-- Navigation Button (always at bottom as per requirement) -->
+    <button class="glass-btn" id="nav-btn">
+        <span id="nav-text">Our Anniversary</span> <span id="nav-icon">→</span>
+    </button>
+
+    <button class="glass-btn" id="install-btn">
+        <span>Install App</span> 📲
+    </button>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="anni-modal">
+        <div class="modal-content">
+            <div class="modal-title">Happy Anniversary! ❤️</div>
+            <p style="margin-bottom: 20px; color: var(--text-muted);">Another magical year together.</p>
+            <button class="modal-btn" id="close-modal-btn">Celebrate</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="install-dialog">
+        <div class="modal-content">
+            <div class="modal-title" style="font-size: 32px;">Install App</div>
+            <p>To install this app on your device:<br><br>
+               <strong>iOS</strong>: Tap Share button ↑ and select "Add to Home Screen"<br>
+               <strong>Android</strong>: Tap Menu ⋮ and select "Install app"
+            </p>
+            <button class="modal-btn" id="close-install-btn">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURATION ---
+        const START_DATE = new Date("2020-02-14T10:30:00");
+        
+        // Images for carousel (20+ items)
+        const images = [
+            "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80",
+            "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80",
+            "https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9b?w=400&q=80",
+            "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80",
+            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&q=80",
+            "https://images.unsplash.com/photo-1533038590840-1cbea6cc2afc?w=400&q=80",
+            "https://images.unsplash.com/photo-1516589091380-5d8e87f6999b?w=400&q=80",
+            "https://images.unsplash.com/photo-1518621736915-f3b1c41b2124?w=400&q=80",
+            "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80",
+            "https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9b?w=400&q=80",
+            "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80",
+            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&q=80",
+            "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80",
+            "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80",
+            "https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9b?w=400&q=80",
+            "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80",
+            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&q=80",
+            "https://images.unsplash.com/photo-1533038590840-1cbea6cc2afc?w=400&q=80",
+            "https://images.unsplash.com/photo-1516589091380-5d8e87f6999b?w=400&q=80",
+            "https://images.unsplash.com/photo-1518621736915-f3b1c41b2124?w=400&q=80"
+        ];
+
+        const journeyLabels = ["Months of Hugs", "Weeks of Joy", "Days of Care", "Hours of Love", "Mins of Laughs", "Secs of Magic"];
+        const countLabels = ["Months of Eagerness", "Weeks of Waiting", "Days of Excitement", "Hours of Love", "Mins of Longing", "Secs of Magic"];
+        
+        const journeyBoxes = document.getElementById('journey-boxes');
+        const countdownBoxes = document.getElementById('countdown-boxes');
+
+        function createCounters(container, labels, idPrefix) {
+            labels.forEach((label, i) => {
+                const box = document.createElement('div');
+                box.className = 'counter-box';
+                box.innerHTML = `
+                    <div class="counter-num" id="${idPrefix}-${i}">0</div>
+                    <div class="counter-label">${label}</div>
+                `;
+                container.appendChild(box);
+            });
+        }
+        createCounters(journeyBoxes, journeyLabels, 'j');
+        createCounters(countdownBoxes, countLabels, 'c');
+
+        // --- 2. TIME CALCULATIONS ---
+        function calculateDiff(past, future) {
+            let diffMs = future - past;
+            if(diffMs < 0) diffMs = 0;
+            const msInSec = 1000;
+            const msInMin = msInSec * 60;
+            const msInHour = msInMin * 60;
+            const msInDay = msInHour * 24;
+
+            let years = future.getFullYear() - past.getFullYear();
+            let months = (years * 12) + (future.getMonth() - past.getMonth());
+            if (future.getDate() < past.getDate() || (future.getDate() === past.getDate() && future.getTime() < past.getTime())) {
+                months--;
+            }
+            if (months < 0) months = 0;
+
+            let weeks = Math.floor(diffMs / (msInDay * 7));
+            let days = Math.floor(diffMs / msInDay);
+            let hours = Math.floor(diffMs / msInHour);
+            let mins = Math.floor(diffMs / msInMin);
+            let secs = Math.floor(diffMs / msInSec);
+
+            return [months, weeks, days, hours, mins, secs];
+        }
+
+        function getNextAnniversary(start) {
+            const now = new Date();
+            let next = new Date(start);
+            next.setFullYear(now.getFullYear());
+            if (now > next) {
+                next.setFullYear(now.getFullYear() + 1);
+            }
+            return next;
+        }
+
+        function updateUI() {
+            const now = new Date();
+            
+            // Journey elapsed
+            const jDiff = calculateDiff(START_DATE, now);
+            jDiff.forEach((val, i) => {
+                const el = document.getElementById(`j-${i}`);
+                if(el) {
+                    if(el.innerText != val) {
+                        el.innerText = val;
+                        if(val.toString().length > 5) el.style.fontSize = "20px";
+                        else if(val.toString().length > 7) el.style.fontSize = "16px";
+                        else el.style.fontSize = "26px";
+                    }
+                }
+            });
+
+            const yearsPassed = Math.floor(jDiff[0] / 12);
+            const yearsSpan = document.getElementById('years-text');
+            if(yearsSpan) yearsSpan.textContent = `${yearsPassed} Years Of Journey`;
+
+            // Countdown
+            const nextAnni = getNextAnniversary(START_DATE);
+            const cDiff = calculateDiff(now, nextAnni);
+            cDiff.forEach((val, i) => {
+                const el = document.getElementById(`c-${i}`);
+                if(el) {
+                    if(el.innerText != val) {
+                        el.innerText = val;
+                        if(val.toString().length > 5) el.style.fontSize = "20px";
+                        else el.style.fontSize = "26px";
+                    }
+                }
+            });
+
+            requestAnimationFrame(updateUI);
+        }
+        updateUI();
+
+        // --- 3. 3D CAROUSEL (drag & auto-spin) ---
+        const carousel = document.getElementById('carousel');
+        let selectedIndex = 0;
+        const cellCount = images.length;
+        const theta = 360 / cellCount;
+        let radius = 0;
+        
+        images.forEach((src) => {
+            const cell = document.createElement('div');
+            cell.className = 'carousel__cell';
+            const img = document.createElement('img');
+            img.src = src;
+            img.setAttribute('draggable', 'false');
+            cell.appendChild(img);
+            carousel.appendChild(cell);
+        });
+        const cells = document.querySelectorAll('.carousel__cell');
+
+        function setupCarousel() {
+            if(!cells.length) return;
+            const cellWidth = cells[0].offsetWidth;
+            radius = Math.round( (cellWidth / 2) / Math.tan(Math.PI / cellCount) );
+            cells.forEach((cell, i) => {
+                const cellAngle = theta * i;
+                cell.style.transform = `rotateY(${cellAngle}deg) translateZ(${radius}px)`;
+            });
+            rotateCarousel(currentRotation);
+        }
+        
+        let currentRotation = 0;
+        function rotateCarousel(deg) {
+            carousel.style.transform = `translateZ(-${radius}px) rotateY(${deg}deg)`;
+        }
+
+        window.addEventListener('resize', () => setTimeout(setupCarousel, 60));
+        setTimeout(setupCarousel, 120);
+
+        let isDragging = false;
+        let startX = 0;
+        let lastX = 0;
+        let velocityX = 0;
+        let isAutoSpinning = true;
+        let autoSpinAngle = 0;
+
+        const sceneEl = document.querySelector('.scene');
+        sceneEl.addEventListener('pointerdown', (e) => {
+            isDragging = true;
+            isAutoSpinning = false;
+            startX = e.clientX;
+            lastX = e.clientX;
+            velocityX = 0;
+            carousel.style.transition = 'none';
+        });
+
+        window.addEventListener('pointermove', (e) => {
+            if (!isDragging) return;
+            const deltaX = e.clientX - lastX;
+            velocityX = deltaX;
+            currentRotation += deltaX;
+            rotateCarousel(currentRotation);
+            lastX = e.clientX;
+        });
+
+        window.addEventListener('pointerup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            const inertia = () => {
+                if(Math.abs(velocityX) > 0.1) {
+                    currentRotation += velocityX;
+                    rotateCarousel(currentRotation);
+                    velocityX *= 0.96;
+                    requestAnimationFrame(inertia);
+                } else {
+                    const nearest = Math.round(currentRotation / theta);
+                    currentRotation = nearest * theta;
+                    carousel.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+                    rotateCarousel(currentRotation);
+                    setTimeout(() => { if(!isDragging) { isAutoSpinning = true; autoSpinAngle = currentRotation; } }, 2000);
+                }
+            };
+            requestAnimationFrame(inertia);
+        });
+
+        function autoSpin() {
+            if (isAutoSpinning) {
+                autoSpinAngle += 0.22;
+                currentRotation = autoSpinAngle;
+                carousel.style.transition = 'none';
+                rotateCarousel(currentRotation);
+            }
+            requestAnimationFrame(autoSpin);
+        }
+        autoSpin();
+
+        // --- 4. TOGGLE PANELS (No extra scroll containers, just normal flow) ---
+        const journeyPanel = document.getElementById('journey-panel');
+        const anniversaryPanel = document.getElementById('anniversary-panel');
+        const navBtn = document.getElementById('nav-btn');
+        const navText = document.getElementById('nav-text');
+        const navIcon = document.getElementById('nav-icon');
+        
+        let showingAnniversary = false;
+        
+        function togglePanels(showAnniversary) {
+            if(showAnniversary) {
+                journeyPanel.classList.add('hidden-panel');
+                anniversaryPanel.classList.remove('hidden-panel');
+                navText.innerText = "Back";
+                navIcon.innerText = "←";
+                showingAnniversary = true;
+            } else {
+                journeyPanel.classList.remove('hidden-panel');
+                anniversaryPanel.classList.add('hidden-panel');
+                navText.innerText = "Our Anniversary";
+                navIcon.innerText = "→";
+                showingAnniversary = false;
+            }
+        }
+        
+        navBtn.addEventListener('click', () => {
+            if(showingAnniversary) {
+                togglePanels(false);
+            } else {
+                togglePanels(true);
+            }
+        });
+
+        // --- 5. BACKGROUND PARTICLES ---
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let width, height, particles = [];
+
+        function resizeBg() {
+            width = bgCanvas.width = window.innerWidth;
+            height = bgCanvas.height = window.innerHeight;
+            particles = [];
+            for(let i=0; i<55; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    r: Math.random() * 2.2 + 0.6,
+                    vx: (Math.random() - 0.5) * 0.4,
+                    vy: (Math.random() - 0.5) * 0.4,
+                    opacity: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+        window.addEventListener('resize', resizeBg);
+        resizeBg();
+
+        function drawBg() {
+            bgCtx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+                bgCtx.beginPath();
+                bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+                bgCtx.fillStyle = `rgba(255, 220, 240, ${p.opacity * 0.6})`;
+                bgCtx.fill();
+            });
+            requestAnimationFrame(drawBg);
+        }
+        drawBg();
+
+        // --- 6. ANNIVERSARY MODAL & CONFETTI ---
+        const confCanvas = document.getElementById('confetti-canvas');
+        const ctxConf = confCanvas.getContext('2d');
+        let confWidth, confHeight;
+        let confettiParticles = [];
+        
+        function resizeConf() {
+            confWidth = confCanvas.width = window.innerWidth;
+            confHeight = confCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeConf);
+        resizeConf();
+
+        function createConfettiBurst() {
+            const colors = ['#ff4d85', '#ffffff', '#ffd966', '#ff9eb5', '#ffb347'];
+            for(let i=0; i<120; i++) {
+                confettiParticles.push({
+                    x: Math.random() < 0.6 ? confWidth * 0.2 + Math.random() * confWidth * 0.6 : confWidth/2 + (Math.random() - 0.5) * 200,
+                    y: confHeight / 2 + (Math.random() * 180 - 90),
+                    vx: (Math.random() - 0.5) * 12,
+                    vy: Math.random() * -12 - 6,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 9 + 4,
+                    rotation: Math.random() * 360,
+                    rotSpeed: (Math.random() - 0.5) * 12,
+                    life: 1.0
+                });
+            }
+        }
+
+        function drawConfetti() {
+            ctxConf.clearRect(0, 0, confWidth, confHeight);
+            for(let i=confettiParticles.length-1; i>=0; i--) {
+                const c = confettiParticles[i];
+                c.x += c.vx;
+                c.y += c.vy;
+                c.vy += 0.35;
+                c.rotation += c.rotSpeed;
+                c.life -= 0.007;
+                ctxConf.save();
+                ctxConf.translate(c.x, c.y);
+                ctxConf.rotate(c.rotation * Math.PI / 180);
+                ctxConf.globalAlpha = Math.max(0, c.life);
+                ctxConf.fillStyle = c.color;
+                if(i % 2 === 0) {
+                    ctxConf.fillRect(-c.size/2, -c.size/2, c.size, c.size);
+                } else {
+                    ctxConf.beginPath();
+                    ctxConf.arc(0, 0, c.size/2, 0, Math.PI*2);
+                    ctxConf.fill();
+                }
+                ctxConf.restore();
+                if(c.y > confHeight + 100 || c.life <= 0) confettiParticles.splice(i,1);
+            }
+            if(confettiParticles.length) requestAnimationFrame(drawConfetti);
+        }
+
+        function triggerConfetti() {
+            createConfettiBurst();
+            drawConfetti();
+            setTimeout(() => { createConfettiBurst(); drawConfetti(); }, 350);
+            setTimeout(() => { createConfettiBurst(); drawConfetti(); }, 750);
+        }
+
+        const today = new Date();
+        const anniModal = document.getElementById('anni-modal');
+        if (today.getMonth() === START_DATE.getMonth() && today.getDate() === START_DATE.getDate()) {
+            anniModal.classList.add('show');
+        }
+        document.getElementById('close-modal-btn').addEventListener('click', () => {
+            anniModal.classList.remove('show');
+            triggerConfetti();
+        });
+
+        // --- 7. PWA & INSTALL ---
+        const manifestPWA = {
+            "name": "Our Anniversary Journey",
+            "short_name": "Our Love",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#0f0c29",
+            "theme_color": "#0f0c29",
+            "icons": [{
+                "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>",
+                "sizes": "192x192",
+                "type": "image/svg+xml"
+            }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestPWA)], {type: 'application/json'});
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        const linkMan = document.createElement('link');
+        linkMan.rel = 'manifest';
+        linkMan.href = manifestUrl;
+        document.head.appendChild(linkMan);
+
+        let deferredPrompt;
+        const installBtnEl = document.getElementById('install-btn');
+        const installDialog = document.getElementById('install-dialog');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtnEl.style.display = 'flex';
+        });
+
+        installBtnEl.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') installBtnEl.style.display = 'none';
+                deferredPrompt = null;
+            } else {
+                installDialog.classList.add('show');
+            }
+        });
+
+        document.getElementById('close-install-btn').addEventListener('click', () => {
+            installDialog.classList.remove('show');
+        });
+    </script>
+</body>
+</html>
