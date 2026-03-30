@@ -8,15 +8,15 @@
         @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Montserrat:wght@300;400;600&display=swap');
 
         :root {
-            --bg-dark: #0f0c29;
-            --bg-mid: #302b63;
-            --bg-light: #24243e;
-            --accent: #ff4d85;
-            --accent-glow: rgba(255, 77, 133, 0.6);
+            --bg-dark: #1a1a2e;
+            --bg-mid: #16213e;
+            --bg-light: #0f3460;
+            --accent: #ff6b8b;
+            --accent-glow: rgba(255, 107, 139, 0.7);
             --text-main: #ffffff;
-            --text-muted: #e0e0e0;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-muted: #f1f1f1;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
         }
 
         * {
@@ -28,9 +28,7 @@
         }
 
         body {
-            background: linear-gradient(135deg, var(--bg-dark), var(--bg-mid), var(--bg-light));
-            background-size: 400% 400%;
-            animation: gradientBg 15s ease infinite;
+            background: radial-gradient(circle at 20% 30%, #2b1b3a, #120c1f);
             color: var(--text-main);
             font-family: 'Montserrat', sans-serif;
             overflow-x: hidden;
@@ -41,31 +39,36 @@
             position: relative;
         }
 
-        @keyframes gradientBg {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Canvases */
-        canvas {
+        /* Background canvas with floating love icons */
+        #bg-canvas {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
             z-index: 1;
+            opacity: 0.6;
         }
-        #confetti-canvas { z-index: 100; }
+        #confetti-canvas { 
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
 
-        /* Common Header & Carousel (sticky visual) */
+        /* Common Header & Carousel */
         .hero-section {
             position: relative;
             width: 100%;
             z-index: 15;
-            background: transparent;
-            backdrop-filter: blur(2px);
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(4px);
             padding: 12px 0 8px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.15);
             margin-bottom: 0;
         }
 
@@ -92,10 +95,16 @@
         }
 
         .love-icon {
-            font-size: 24px;
+            font-size: 28px;
             animation: heartBeat 1.5s infinite;
-            filter: drop-shadow(0 0 10px var(--accent));
+            filter: drop-shadow(0 0 12px var(--accent));
             margin-top: -8px;
+            cursor: pointer;
+            transition: transform 0.1s ease;
+            display: inline-block;
+        }
+        .love-icon:active {
+            transform: scale(0.95);
         }
 
         @keyframes heartBeat {
@@ -111,42 +120,63 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 77, 133, 0.4);
+            text-shadow: 0 0 20px rgba(255, 107, 139, 0.4);
+        }
+        
+        .since-date {
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            font-weight: 300;
+            background: var(--glass-bg);
+            backdrop-filter: blur(4px);
+            padding: 4px 12px;
+            border-radius: 40px;
+            margin-top: 6px;
+            display: inline-block;
+            border: 0.5px solid var(--glass-border);
         }
 
-        /* 3D Carousel */
+        /* 3D Carousel - Fixed aspect ratio for images */
         .scene {
             width: 100%;
-            height: 150px;
+            height: 25vh;
+            min-height: 150px;
+            max-height: 210px;
             perspective: 800px;
             position: relative;
-            margin: 5px 0 5px 0;
+            margin: 8px 0 5px 0;
             display: flex;
             justify-content: center;
             align-items: center;
             touch-action: none;
+            overflow-x: auto;
+            overflow-y: visible;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
         }
 
         .carousel {
             width: 80px;
-            height: 120px;
+            height: 100%;
             position: absolute;
             transform-style: preserve-3d;
             transition: transform 0.1s linear;
+            pointer-events: auto;
         }
 
         .carousel__cell {
             position: absolute;
             width: 80px;
-            height: 120px;
+            height: 100%;
             left: 0;
             top: 0;
-            border-radius: 12px;
+            border-radius: 16px;
             overflow: hidden;
-            box-shadow: 0 0 15px rgba(0,0,0,0.5), 0 0 10px var(--glass-border) inset;
-            border: 1px solid var(--glass-border);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5), 0 0 12px rgba(255,107,139,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
             user-select: none;
             -webkit-user-drag: none;
+            background: #2a1e3a;
         }
 
         .carousel__cell img {
@@ -158,27 +188,45 @@
             pointer-events: none;
         }
 
-        /* MAIN SCROLLABLE CONTENT: Normal page flow, but each panel is a block */
-        .content-wrapper {
+        /* SWIPEABLE PANELS CONTAINER - Horizontal swipe layout */
+        .panels-container {
             position: relative;
             width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            z-index: 10;
+            overflow: hidden;
             flex: 1;
-            display: flex;
-            flex-direction: column;
             min-height: 0;
         }
 
-        .panel {
-            width: 100%;
-            transition: opacity 0.25s ease, transform 0.25s ease;
-            will-change: opacity;
+        .panels-wrapper {
+            display: flex;
+            width: 200%;
+            transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            transform: translateX(0%);
         }
 
-        .panel.hidden-panel {
-            display: none;
+        .panels-wrapper.anniversary-active {
+            transform: translateX(-50%);
+        }
+
+        .panel-slide {
+            width: 50%;
+            flex-shrink: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-bottom: 85px;
+        }
+
+        /* Custom scroll for panels */
+        .panel-slide::-webkit-scrollbar {
+            width: 4px;
+        }
+        .panel-slide::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        .panel-slide::-webkit-scrollbar-thumb {
+            background: var(--accent);
+            border-radius: 10px;
         }
 
         /* Counters Grid */
@@ -198,11 +246,11 @@
         .counter-box {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
+            border-radius: 20px;
             padding: 10px 8px;
             text-align: center;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -211,15 +259,15 @@
         }
 
         .counter-box:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 20px var(--accent-glow);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 22px var(--accent-glow);
         }
 
         .counter-num {
             font-size: 22px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--accent);
-            text-shadow: 0 0 10px var(--accent-glow);
+            text-shadow: 0 0 8px var(--accent-glow);
             transition: font-size 0.2s ease;
             white-space: nowrap;
         }
@@ -230,6 +278,7 @@
             margin-top: 4px;
             color: var(--text-muted);
             text-transform: uppercase;
+            font-weight: 500;
         }
 
         .anniversary-header {
@@ -244,84 +293,69 @@
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 20px rgba(255, 77, 133, 0.4);
         }
 
-        /* Fixed Nav Button (always at bottom last position but fixed on viewport) */
+        /* Glass Button - Fixed at bottom */
         .glass-btn {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             color: var(--text-main);
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-family: 'Montserrat', sans-serif;
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 600;
-            border-radius: 40px;
+            border-radius: 50px;
             cursor: pointer;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 8px 28px rgba(0,0,0,0.4);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             outline: none;
             z-index: 200;
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            width: auto;
+            pointer-events: auto;
         }
-
+        
         .glass-btn:hover, .glass-btn:active {
             background: rgba(255, 255, 255, 0.2);
-            box-shadow: 0 0 20px var(--accent-glow);
-            transform: translateY(-2px);
+            box-shadow: 0 0 22px var(--accent-glow);
+            transform: translateX(-50%) translateY(-2px);
         }
 
-        #nav-btn {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: auto;
-            white-space: nowrap;
-        }
-
-        #install-btn {
-            position: fixed;
-            bottom: 95px;
-            left: 50%;
-            transform: translateX(-50%);
-            display: none;
-            white-space: nowrap;
-        }
-
-        /* responsive spacings - no unnecessary gaps */
+        /* responsive */
         @media (min-width: 480px) {
             .arc-svg { width: 280px; height: 80px; }
             .arc-text { font-size: 32px; }
             .couple-name { font-size: 34px; }
-            .scene { height: 190px; }
-            .carousel, .carousel__cell { width: 100px; height: 150px; }
+            .carousel, .carousel__cell { width: 100px; height: 90%; }
             .counters-grid { gap: 15px; }
-            .counter-box { padding: 12px 8px; }
             .counter-num { font-size: 26px; }
             .counter-label { font-size: 9px; }
-            .anniversary-header { font-size: 26px; }
+            .since-date { font-size: 13px; }
         }
 
         @media (min-width: 768px) {
             .counters-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
-            .scene { height: 240px; }
-            .carousel, .carousel__cell { width: 120px; height: 180px; }
+            .carousel, .carousel__cell { width: 120px; }
             .counter-num { font-size: 32px; }
-            .counter-label { font-size: 10px; }
-            .anniversary-header { font-size: 30px; margin-top: 20px; }
+            .anniversary-header { font-size: 30px; }
+            .scene { height: 25vh; max-height: 260px; }
         }
 
         @media (min-width: 1024px) {
             .counters-grid { grid-template-columns: repeat(6, 1fr); }
-            .carousel, .carousel__cell { width: 140px; height: 210px; }
-            .scene { height: 290px; }
+            .carousel, .carousel__cell { width: 140px; }
             .arc-svg { width: 380px; }
             .arc-text { font-size: 38px; }
+            .scene { height: 28vh; max-height: 280px; }
         }
 
         /* Modal Styles */
@@ -330,7 +364,7 @@
             top: 0; left: 0;
             width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(12px);
             z-index: 1000;
             display: flex;
             justify-content: center;
@@ -343,14 +377,14 @@
         .modal-overlay.show { opacity: 1; pointer-events: all; }
 
         .modal-content {
-            background: linear-gradient(135deg, rgba(20,20,30,0.95), rgba(40,30,50,0.95));
-            border: 1px solid var(--accent-glow);
-            border-radius: 28px;
-            padding: 30px 40px;
+            background: linear-gradient(145deg, rgba(30,20,40,0.98), rgba(20,15,35,0.98));
+            border: 1px solid var(--accent);
+            border-radius: 32px;
+            padding: 32px 36px;
             text-align: center;
             transform: scale(0.9);
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 20px 40px var(--accent-glow);
+            box-shadow: 0 20px 40px rgba(255,77,133,0.3);
         }
 
         .modal-overlay.show .modal-content { transform: scale(1); }
@@ -360,30 +394,25 @@
             font-size: 48px;
             color: var(--text-main);
             margin-bottom: 16px;
-            text-shadow: 0 0 15px var(--accent);
+            text-shadow: 0 0 12px var(--accent);
         }
 
         .modal-btn {
             background: var(--accent);
             color: #fff;
             border: none;
-            padding: 10px 28px;
-            border-radius: 40px;
+            padding: 12px 32px;
+            border-radius: 50px;
             font-family: 'Montserrat', sans-serif;
             font-weight: 600;
             cursor: pointer;
             transition: background 0.3s, transform 0.2s;
+            margin-top: 16px;
         }
+        .modal-btn:hover { background: #ff517b; transform: scale(1.02); }
 
-        .modal-btn:hover { background: #ff2a6d; transform: scale(1.02); }
-
-        /* no extra spaces, smooth scrolling */
         body {
             scroll-behavior: smooth;
-        }
-
-        .content-wrapper {
-            padding-bottom: 90px;
         }
     </style>
 </head>
@@ -399,89 +428,80 @@
                 <path id="curve" d="M 20 80 Q 150 10 280 80" fill="transparent"/>
                 <text class="arc-text"><textPath href="#curve" startOffset="50%" text-anchor="middle" id="years-text">Years Of Journey</textPath></text>
             </svg>
-            <div class="love-icon">❤️</div>
+            <div class="love-icon" id="doubleTapHeart">❤️</div>
             <div class="couple-name">You & Me</div>
+            <div class="since-date" id="since-display">Since loading...</div>
         </div>
         <div class="scene">
             <div class="carousel" id="carousel"></div>
         </div>
     </div>
 
-    <!-- MAIN SCROLLABLE CONTENT: two panels toggled via visibility, no extra nested scrolling, normal document flow -->
-    <div class="content-wrapper">
-        <!-- Journey Panel -->
-        <div id="journey-panel" class="panel">
-            <div class="counters-container">
-                <div class="counters-grid" id="journey-boxes"></div>
+    <!-- SWIPEABLE PANELS: Horizontal sliding container -->
+    <div class="panels-container">
+        <div class="panels-wrapper" id="panelsWrapper">
+            <!-- Journey Panel (Slide 1) -->
+                <div class="panel-slide">
+                    <h2 class="anniversary-header">✨ OUR JOURNEY ✨</h2>
+                    <div class="counters-container">
+                        <div class="counters-grid" id="journey-boxes"></div>
+                    </div>
+                    <div style="height: 5px;"></div>
+                </div>
+            
+            <!-- Anniversary Panel (Slide 2) -->
+            <div class="panel-slide">
+                <h2 class="anniversary-header">✨ OUR NEXT ANNIVERSARY ✨</h2>
+                <div class="counters-container">
+                    <div class="counters-grid" id="countdown-boxes"></div>
+                </div>
+                <div style="height: 5px;"></div>
             </div>
-            <div style="height: 5px;"></div>
-        </div>
-
-        <!-- Anniversary Panel (initially hidden) -->
-        <div id="anniversary-panel" class="panel hidden-panel">
-            <h2 class="anniversary-header">✨ OUR NEXT ANNIVERSARY ✨</h2>
-            <div class="counters-container">
-                <div class="counters-grid" id="countdown-boxes"></div>
-            </div>
-            <div style="height: 5px;"></div>
         </div>
     </div>
 
-    <!-- Navigation Button (always at bottom as per requirement) -->
+    <!-- Glass Button (Fixed at bottom) -->
     <button class="glass-btn" id="nav-btn">
         <span id="nav-text">Our Anniversary</span> <span id="nav-icon">→</span>
     </button>
 
-    <button class="glass-btn" id="install-btn">
-        <span>Install App</span> 📲
-    </button>
+    <!-- Install Dialog Modal (triggered by double-tap heart) -->
+    <div class="modal-overlay" id="install-dialog">
+        <div class="modal-content">
+            <div class="modal-title" style="font-size: 34px;">✨ Install App ✨</div>
+            <p style="margin-bottom: 20px; color: #f0f0f0;">Add this love journey to your home screen:<br><br>
+               <strong>📱 iOS</strong>: Tap Share <span style="font-size:18px">↑</span> → "Add to Home Screen"<br>
+               <strong>🤖 Android</strong>: Tap Menu ⋮ → "Install App" or "Add to Home Screen"
+            </p>
+            <button class="modal-btn" id="close-install-btn">Got It 💖</button>
+        </div>
+    </div>
 
-    <!-- Modals -->
+    <!-- Anniversary Modal (auto show on exact date) -->
     <div class="modal-overlay" id="anni-modal">
         <div class="modal-content">
             <div class="modal-title">Happy Anniversary! ❤️</div>
             <p style="margin-bottom: 20px; color: var(--text-muted);">Another magical year together.</p>
-            <button class="modal-btn" id="close-modal-btn">Celebrate</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="install-dialog">
-        <div class="modal-content">
-            <div class="modal-title" style="font-size: 32px;">Install App</div>
-            <p>To install this app on your device:<br><br>
-               <strong>iOS</strong>: Tap Share button ↑ and select "Add to Home Screen"<br>
-               <strong>Android</strong>: Tap Menu ⋮ and select "Install app"
-            </p>
-            <button class="modal-btn" id="close-install-btn">Close</button>
+            <button class="modal-btn" id="close-modal-btn">Celebrate 🎉</button>
         </div>
     </div>
 
     <script>
-        // --- 1. CONFIGURATION ---
+        // --- CONFIGURATION ---
         const START_DATE = new Date("2020-02-14T10:30:00");
+        const START_DISPLAY_STRING = "February 14, 2020";
         
-        // Images for carousel (20+ items)
+        const sinceSpan = document.getElementById('since-display');
+        if(sinceSpan) sinceSpan.innerText = `✨ since ${START_DISPLAY_STRING} ✨`;
+
+        // Images for carousel with proper aspect ratio (using placeholder paths but maintaining ratio)
         const images = [
-            "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80",
-            "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80",
-            "https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9b?w=400&q=80",
-            "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80",
-            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&q=80",
-            "https://images.unsplash.com/photo-1533038590840-1cbea6cc2afc?w=400&q=80",
-            "https://images.unsplash.com/photo-1516589091380-5d8e87f6999b?w=400&q=80",
-            "https://images.unsplash.com/photo-1518621736915-f3b1c41b2124?w=400&q=80",
-            "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80",
-            "https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9b?w=400&q=80",
-            "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80",
-            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&q=80",
-            "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=400&q=80",
-            "https://images.unsplash.com/photo-1511895426328-dc8714191300?w=400&q=80",
-            "https://images.unsplash.com/photo-1518104593124-ac2e82a5eb9b?w=400&q=80",
-            "https://images.unsplash.com/photo-1469334031218-e382a71b716b?w=400&q=80",
-            "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400&q=80",
-            "https://images.unsplash.com/photo-1533038590840-1cbea6cc2afc?w=400&q=80",
-            "https://images.unsplash.com/photo-1516589091380-5d8e87f6999b?w=400&q=80",
-            "https://images.unsplash.com/photo-1518621736915-f3b1c41b2124?w=400&q=80"
+            "./assets/img1.png", "./assets/img2.png", "./assets/img3.png", "./assets/img4.png",
+            "./assets/img5.png", "./assets/img6.png", "./assets/img7.png", "./assets/img8.png",
+            "./assets/img9.png", "./assets/img10.png", "./assets/img11.png", "./assets/img12.png",
+            "./assets/img13.png", "./assets/img14.png", "./assets/img1.png", "./assets/img2.png",
+            "./assets/img3.png", "./assets/img4.png", "./assets/img5.png", "./assets/img6.png",
+            "./assets/img7.png", "./assets/img8.png", "./assets/img9.png"
         ];
 
         const journeyLabels = ["Months of Hugs", "Weeks of Joy", "Days of Care", "Hours of Love", "Mins of Laughs", "Secs of Magic"];
@@ -504,7 +524,7 @@
         createCounters(journeyBoxes, journeyLabels, 'j');
         createCounters(countdownBoxes, countLabels, 'c');
 
-        // --- 2. TIME CALCULATIONS ---
+        // --- TIME CALCULATIONS ---
         function calculateDiff(past, future) {
             let diffMs = future - past;
             if(diffMs < 0) diffMs = 0;
@@ -542,17 +562,15 @@
         function updateUI() {
             const now = new Date();
             
-            // Journey elapsed
             const jDiff = calculateDiff(START_DATE, now);
             jDiff.forEach((val, i) => {
                 const el = document.getElementById(`j-${i}`);
                 if(el) {
-                    if(el.innerText != val) {
-                        el.innerText = val;
-                        if(val.toString().length > 5) el.style.fontSize = "20px";
-                        else if(val.toString().length > 7) el.style.fontSize = "16px";
-                        else el.style.fontSize = "26px";
-                    }
+                    let displayVal = val;
+                    if(displayVal.toString().length > 6) el.style.fontSize = "18px";
+                    else if(displayVal.toString().length > 8) el.style.fontSize = "14px";
+                    else el.style.fontSize = "26px";
+                    el.innerText = displayVal;
                 }
             });
 
@@ -560,17 +578,14 @@
             const yearsSpan = document.getElementById('years-text');
             if(yearsSpan) yearsSpan.textContent = `${yearsPassed} Years Of Journey`;
 
-            // Countdown
             const nextAnni = getNextAnniversary(START_DATE);
             const cDiff = calculateDiff(now, nextAnni);
             cDiff.forEach((val, i) => {
                 const el = document.getElementById(`c-${i}`);
                 if(el) {
-                    if(el.innerText != val) {
-                        el.innerText = val;
-                        if(val.toString().length > 5) el.style.fontSize = "20px";
-                        else el.style.fontSize = "26px";
-                    }
+                    if(val.toString().length > 6) el.style.fontSize = "18px";
+                    else el.style.fontSize = "26px";
+                    el.innerText = val;
                 }
             });
 
@@ -578,9 +593,8 @@
         }
         updateUI();
 
-        // --- 3. 3D CAROUSEL (drag & auto-spin) ---
+        // --- 3. 3D CAROUSEL (REDUCED SENSITIVITY & BETTER ASPECT RATIO)---
         const carousel = document.getElementById('carousel');
-        let selectedIndex = 0;
         const cellCount = images.length;
         const theta = 360 / cellCount;
         let radius = 0;
@@ -591,6 +605,8 @@
             const img = document.createElement('img');
             img.src = src;
             img.setAttribute('draggable', 'false');
+            img.alt = "memory";
+            // Maintain aspect ratio: object-fit cover already ensures ratio, cell size is fixed proportion
             cell.appendChild(img);
             carousel.appendChild(cell);
         });
@@ -612,8 +628,8 @@
             carousel.style.transform = `translateZ(-${radius}px) rotateY(${deg}deg)`;
         }
 
-        window.addEventListener('resize', () => setTimeout(setupCarousel, 60));
-        setTimeout(setupCarousel, 120);
+        window.addEventListener('resize', () => setTimeout(setupCarousel, 80));
+        setTimeout(setupCarousel, 150);
 
         let isDragging = false;
         let startX = 0;
@@ -621,6 +637,7 @@
         let velocityX = 0;
         let isAutoSpinning = true;
         let autoSpinAngle = 0;
+        let dragSensitivity = 0.65; // REDUCED SENSITIVITY - slower response
 
         const sceneEl = document.querySelector('.scene');
         sceneEl.addEventListener('pointerdown', (e) => {
@@ -634,7 +651,7 @@
 
         window.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
-            const deltaX = e.clientX - lastX;
+            const deltaX = (e.clientX - lastX) * dragSensitivity; // Reduced sensitivity
             velocityX = deltaX;
             currentRotation += deltaX;
             rotateCarousel(currentRotation);
@@ -645,15 +662,15 @@
             if (!isDragging) return;
             isDragging = false;
             const inertia = () => {
-                if(Math.abs(velocityX) > 0.1) {
+                if(Math.abs(velocityX) > 0.08) {
                     currentRotation += velocityX;
                     rotateCarousel(currentRotation);
-                    velocityX *= 0.96;
+                    velocityX *= 0.94;
                     requestAnimationFrame(inertia);
                 } else {
                     const nearest = Math.round(currentRotation / theta);
                     currentRotation = nearest * theta;
-                    carousel.style.transition = 'transform 0.45s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
+                    carousel.style.transition = 'transform 0.55s cubic-bezier(0.2, 0.9, 0.4, 1.1)';
                     rotateCarousel(currentRotation);
                     setTimeout(() => { if(!isDragging) { isAutoSpinning = true; autoSpinAngle = currentRotation; } }, 2000);
                 }
@@ -663,7 +680,7 @@
 
         function autoSpin() {
             if (isAutoSpinning) {
-                autoSpinAngle += 0.22;
+                autoSpinAngle += 0.2;
                 currentRotation = autoSpinAngle;
                 carousel.style.transition = 'none';
                 rotateCarousel(currentRotation);
@@ -672,79 +689,142 @@
         }
         autoSpin();
 
-        // --- 4. TOGGLE PANELS (No extra scroll containers, just normal flow) ---
-        const journeyPanel = document.getElementById('journey-panel');
-        const anniversaryPanel = document.getElementById('anniversary-panel');
-        const navBtn = document.getElementById('nav-btn');
-        const navText = document.getElementById('nav-text');
-        const navIcon = document.getElementById('nav-icon');
+        // --- 4. SWIPE PANELS: Horizontal slide transition (left/right swipe effect)---
+        const panelsWrapper = document.getElementById('panelsWrapper');
+        const navBtnSlide = document.getElementById('nav-btn');
+        const navTextSlide = document.getElementById('nav-text');
+        const navIconSlide = document.getElementById('nav-icon');
         
-        let showingAnniversary = false;
+        let showingAnniversarySlide = false;
         
-        function togglePanels(showAnniversary) {
-            if(showAnniversary) {
-                journeyPanel.classList.add('hidden-panel');
-                anniversaryPanel.classList.remove('hidden-panel');
-                navText.innerText = "Back";
-                navIcon.innerText = "←";
-                showingAnniversary = true;
+        function switchToAnniversary(showAnni) {
+            if(showAnni) {
+                panelsWrapper.classList.add('anniversary-active');
+                navTextSlide.innerText = "Back";
+                navIconSlide.innerText = "←";
+                showingAnniversarySlide = true;
             } else {
-                journeyPanel.classList.remove('hidden-panel');
-                anniversaryPanel.classList.add('hidden-panel');
-                navText.innerText = "Our Anniversary";
-                navIcon.innerText = "→";
-                showingAnniversary = false;
+                panelsWrapper.classList.remove('anniversary-active');
+                navTextSlide.innerText = "Our Anniversary";
+                navIconSlide.innerText = "→";
+                showingAnniversarySlide = false;
             }
         }
         
-        navBtn.addEventListener('click', () => {
-            if(showingAnniversary) {
-                togglePanels(false);
+        navBtnSlide.addEventListener('click', () => {
+            if(showingAnniversarySlide) {
+                switchToAnniversary(false);
             } else {
-                togglePanels(true);
+                switchToAnniversary(true);
             }
         });
 
-        // --- 5. BACKGROUND PARTICLES ---
+        // Optional: Add touch swipe support for panels container (gesture)
+        const panelsContainer = document.querySelector('.panels-container');
+        let touchStartXPan = 0;
+        let touchEndXPan = 0;
+        let isSwiping = false;
+        
+        panelsContainer.addEventListener('touchstart', (e) => {
+            touchStartXPan = e.touches[0].clientX;
+            isSwiping = true;
+        });
+        
+        panelsContainer.addEventListener('touchmove', (e) => {
+            if(!isSwiping) return;
+            // Prevent vertical scrolling interference during horizontal swipe
+            const diffX = e.touches[0].clientX - touchStartXPan;
+            if(Math.abs(diffX) > 15) {
+                e.preventDefault();
+            }
+        });
+        
+        panelsContainer.addEventListener('touchend', (e) => {
+            if(!isSwiping) return;
+            touchEndXPan = e.changedTouches[0].clientX;
+            const swipeDistance = touchEndXPan - touchStartXPan;
+            const threshold = 60;
+            if(Math.abs(swipeDistance) > threshold) {
+                if(swipeDistance > 0 && showingAnniversarySlide) {
+                    // Swipe right -> go back to journey
+                    switchToAnniversary(false);
+                } else if(swipeDistance < 0 && !showingAnniversarySlide) {
+                    // Swipe left -> go to anniversary
+                    switchToAnniversary(true);
+                }
+            }
+            isSwiping = false;
+        });
+        
+        panelsContainer.addEventListener('touchcancel', () => { isSwiping = false; });
+
+        // --- 5. BACKGROUND: LOVE ICONS & PARTICLES (Pure love ambience)---
         const bgCanvas = document.getElementById('bg-canvas');
         const bgCtx = bgCanvas.getContext('2d');
-        let width, height, particles = [];
+        let width, height, loveElements = [];
 
         function resizeBg() {
             width = bgCanvas.width = window.innerWidth;
             height = bgCanvas.height = window.innerHeight;
-            particles = [];
-            for(let i=0; i<55; i++) {
-                particles.push({
+            loveElements = [];
+            const iconsCount = Math.floor(width / 35) + 18;
+            for(let i=0; i<iconsCount; i++) {
+                loveElements.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
-                    r: Math.random() * 2.2 + 0.6,
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.4,
-                    opacity: Math.random() * 0.5 + 0.2
+                    size: Math.random() * 22 + 12,
+                    type: Math.random() > 0.6 ? '❤️' : (Math.random() > 0.5 ? '💖' : '🌸'),
+                    speedX: (Math.random() - 0.5) * 0.2,
+                    speedY: (Math.random() - 0.5) * 0.15 + 0.08,
+                    alpha: Math.random() * 0.5 + 0.25,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.015
+                });
+            }
+            for(let i=0;i<80;i++) {
+                loveElements.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    size: Math.random() * 6 + 2,
+                    type: '✨',
+                    speedX: (Math.random() - 0.5) * 0.08,
+                    speedY: (Math.random() - 0.5) * 0.06,
+                    alpha: Math.random() * 0.6 + 0.2,
+                    rotation: 0,
+                    rotSpeed: 0
                 });
             }
         }
         window.addEventListener('resize', resizeBg);
         resizeBg();
 
-        function drawBg() {
+        function drawLoveBg() {
             bgCtx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.x += p.vx;
-                p.y += p.vy;
-                if(p.x < 0 || p.x > width) p.vx *= -1;
-                if(p.y < 0 || p.y > height) p.vy *= -1;
-                bgCtx.beginPath();
-                bgCtx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-                bgCtx.fillStyle = `rgba(255, 220, 240, ${p.opacity * 0.6})`;
-                bgCtx.fill();
+            loveElements.forEach(el => {
+                el.x += el.speedX;
+                el.y += el.speedY;
+                if(el.x < -40) el.x = width + 30;
+                if(el.x > width + 40) el.x = -30;
+                if(el.y < -40) el.y = height + 30;
+                if(el.y > height + 40) el.y = -30;
+                
+                bgCtx.save();
+                bgCtx.translate(el.x, el.y);
+                bgCtx.rotate(el.rotation);
+                bgCtx.font = `${el.size}px "Segoe UI Emoji", "Apple Color Emoji", sans-serif`;
+                bgCtx.globalAlpha = el.alpha * 0.65;
+                bgCtx.fillStyle = el.type === '✨' ? '#fff5c4' : '#ff8aae';
+                bgCtx.shadowBlur = 8;
+                bgCtx.shadowColor = '#ff6b8b';
+                bgCtx.fillText(el.type, -el.size/2, el.size/2);
+                bgCtx.restore();
+                if(el.rotSpeed) el.rotation += el.rotSpeed;
             });
-            requestAnimationFrame(drawBg);
+            requestAnimationFrame(drawLoveBg);
         }
-        drawBg();
+        drawLoveBg();
 
-        // --- 6. ANNIVERSARY MODAL & CONFETTI ---
+        // --- 6. CONFETTI + ANNIVERSARY MODAL---
         const confCanvas = document.getElementById('confetti-canvas');
         const ctxConf = confCanvas.getContext('2d');
         let confWidth, confHeight;
@@ -758,17 +838,17 @@
         resizeConf();
 
         function createConfettiBurst() {
-            const colors = ['#ff4d85', '#ffffff', '#ffd966', '#ff9eb5', '#ffb347'];
-            for(let i=0; i<120; i++) {
+            const colors = ['#ff6b8b', '#ffb347', '#ffffff', '#ff9eb5', '#ff85a1'];
+            for(let i=0; i<130; i++) {
                 confettiParticles.push({
-                    x: Math.random() < 0.6 ? confWidth * 0.2 + Math.random() * confWidth * 0.6 : confWidth/2 + (Math.random() - 0.5) * 200,
-                    y: confHeight / 2 + (Math.random() * 180 - 90),
-                    vx: (Math.random() - 0.5) * 12,
-                    vy: Math.random() * -12 - 6,
+                    x: confWidth/2 + (Math.random() - 0.5) * 200,
+                    y: confHeight/2 - 50 + Math.random() * 120,
+                    vx: (Math.random() - 0.5) * 14,
+                    vy: Math.random() * -12 - 5,
                     color: colors[Math.floor(Math.random() * colors.length)],
-                    size: Math.random() * 9 + 4,
+                    size: Math.random() * 9 + 5,
                     rotation: Math.random() * 360,
-                    rotSpeed: (Math.random() - 0.5) * 12,
+                    rotSpeed: (Math.random() - 0.5) * 14,
                     life: 1.0
                 });
             }
@@ -780,9 +860,9 @@
                 const c = confettiParticles[i];
                 c.x += c.vx;
                 c.y += c.vy;
-                c.vy += 0.35;
+                c.vy += 0.38;
                 c.rotation += c.rotSpeed;
-                c.life -= 0.007;
+                c.life -= 0.008;
                 ctxConf.save();
                 ctxConf.translate(c.x, c.y);
                 ctxConf.rotate(c.rotation * Math.PI / 180);
@@ -804,8 +884,8 @@
         function triggerConfetti() {
             createConfettiBurst();
             drawConfetti();
-            setTimeout(() => { createConfettiBurst(); drawConfetti(); }, 350);
-            setTimeout(() => { createConfettiBurst(); drawConfetti(); }, 750);
+            setTimeout(() => { createConfettiBurst(); drawConfetti(); }, 280);
+            setTimeout(() => { createConfettiBurst(); drawConfetti(); }, 650);
         }
 
         const today = new Date();
@@ -818,14 +898,32 @@
             triggerConfetti();
         });
 
-        // --- 7. PWA & INSTALL ---
+        // --- 7. DOUBLE TAP HEART FOR INSTALL DIALOG---
+        const heartIcon = document.getElementById('doubleTapHeart');
+        let lastTap = 0;
+        heartIcon.addEventListener('click', (e) => {
+            const nowTime = new Date().getTime();
+            const tapInterval = nowTime - lastTap;
+            if(tapInterval < 300 && tapInterval > 0) {
+                e.preventDefault();
+                const installDialogModal = document.getElementById('install-dialog');
+                installDialogModal.classList.add('show');
+            }
+            lastTap = nowTime;
+        });
+        
+        document.getElementById('close-install-btn').addEventListener('click', () => {
+            document.getElementById('install-dialog').classList.remove('show');
+        });
+
+        // PWA manifest
         const manifestPWA = {
-            "name": "Our Anniversary Journey",
-            "short_name": "Our Love",
+            "name": "Our Love Journey",
+            "short_name": "LoveJourney",
             "start_url": ".",
             "display": "standalone",
-            "background_color": "#0f0c29",
-            "theme_color": "#0f0c29",
+            "background_color": "#1a1a2e",
+            "theme_color": "#ff6b8b",
             "icons": [{
                 "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>❤️</text></svg>",
                 "sizes": "192x192",
@@ -838,31 +936,6 @@
         linkMan.rel = 'manifest';
         linkMan.href = manifestUrl;
         document.head.appendChild(linkMan);
-
-        let deferredPrompt;
-        const installBtnEl = document.getElementById('install-btn');
-        const installDialog = document.getElementById('install-dialog');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            installBtnEl.style.display = 'flex';
-        });
-
-        installBtnEl.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') installBtnEl.style.display = 'none';
-                deferredPrompt = null;
-            } else {
-                installDialog.classList.add('show');
-            }
-        });
-
-        document.getElementById('close-install-btn').addEventListener('click', () => {
-            installDialog.classList.remove('show');
-        });
     </script>
 </body>
 </html>
