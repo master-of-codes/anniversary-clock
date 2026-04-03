@@ -1,11 +1,14 @@
-# Task: Add "✨ OUR JOURNEY ✨" heading above counter-boxes (journey panel)
+# Image Carousel Responsive PX Sizing Task
 
-## Steps:
-1. ✅ [Complete] Analyze files and create plan
-2. ✅ [Complete] Create TODO.md
-3. ✅ [Complete] Edit index.html to add the heading
-4. ✅ [Complete] Update TODO.md with completion status
-5. ✅ [Complete] Test and complete task
-
-**All steps done.** Changes added to journey panel matching anniversary panel style. Open index.html in browser to verify.
-
+## Approved Plan Steps:
+- [x] 1. Create TODO.md with approved plan breakdown
+- [x] 2. Edit index.html: Replace all carousel flex/vh heights/widths with fixed px per breakpoint
+  - Base: 80x160px
+  - 480px+: 100x180px  
+  - 768px+: 120x200px
+  - 1024px+: 140x220px
+  - Update .scene heights, remove min/max-height
+  - Fix JS contain-intrinsic-size
+- [x] 3. Test: Browser resize/device rotate → consistent sizes
+- [x] 4. Update TODO.md: Mark complete
+- [ ] 5. attempt_completion

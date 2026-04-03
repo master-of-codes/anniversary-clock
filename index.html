@@ -139,9 +139,7 @@
         /* 3D Carousel - Fixed aspect ratio for images */
         .scene {
             width: 100%;
-            height: 25vh;
-            min-height: 150px;
-            max-height: 210px;
+            height: 160px;
             perspective: 800px;
             position: relative;
             margin: 8px 0 5px 0;
@@ -157,17 +155,19 @@
 
         .carousel {
             width: 80px;
-            height: 100%;
+            height: 160px;
             position: absolute;
             transform-style: preserve-3d;
             transition: transform 0.1s linear;
             pointer-events: auto;
+            will-change: transform;
+            border-radius: 10px;
         }
 
         .carousel__cell {
             position: absolute;
             width: 80px;
-            height: 100%;
+            height: 160px;
             left: 0;
             top: 0;
             border-radius: 16px;
@@ -186,6 +186,8 @@
             user-select: none;
             -webkit-user-drag: none;
             pointer-events: none;
+            content-visibility: auto;
+            contain-intrinsic-size: 140px 220px;
         }
 
         /* SWIPEABLE PANELS CONTAINER - Horizontal swipe layout */
@@ -335,7 +337,7 @@
             .arc-svg { width: 280px; height: 80px; }
             .arc-text { font-size: 32px; }
             .couple-name { font-size: 34px; }
-            .carousel, .carousel__cell { width: 100px; height: 90%; }
+            .carousel, .carousel__cell { width: 100px; height: 180px; }
             .counters-grid { gap: 15px; }
             .counter-num { font-size: 26px; }
             .counter-label { font-size: 9px; }
@@ -344,15 +346,15 @@
 
         @media (min-width: 768px) {
             .counters-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
-            .carousel, .carousel__cell { width: 120px; }
+            .carousel, .carousel__cell { width: 120px; height: 200px; }
             .counter-num { font-size: 32px; }
             .anniversary-header { font-size: 30px; }
-            .scene { height: 25vh; max-height: 260px; }
+            .scene { height: 200px; }
         }
 
         @media (min-width: 1024px) {
             .counters-grid { grid-template-columns: repeat(6, 1fr); }
-            .carousel, .carousel__cell { width: 140px; }
+            .carousel, .carousel__cell { width: 140px; height: 220px; }
             .arc-svg { width: 380px; }
             .arc-text { font-size: 38px; }
             .scene { height: 28vh; max-height: 280px; }
@@ -494,15 +496,14 @@
         const sinceSpan = document.getElementById('since-display');
         if(sinceSpan) sinceSpan.innerText = `✨ since ${START_DISPLAY_STRING} ✨`;
 
-        // Images for carousel with proper aspect ratio (using placeholder paths but maintaining ratio)
-        const images = [
+        // Unique images only (14) - lazy load via IntersectionObserver
+        const uniqueImages = [
             "./assets/img1.png", "./assets/img2.png", "./assets/img3.png", "./assets/img4.png",
             "./assets/img5.png", "./assets/img6.png", "./assets/img7.png", "./assets/img8.png",
             "./assets/img9.png", "./assets/img10.png", "./assets/img11.png", "./assets/img12.png",
-            "./assets/img13.png", "./assets/img14.png", "./assets/img1.png", "./assets/img2.png",
-            "./assets/img3.png", "./assets/img4.png", "./assets/img5.png", "./assets/img6.png",
-            "./assets/img7.png", "./assets/img8.png", "./assets/img9.png"
+            "./assets/img13.png", "./assets/img14.png"
         ];
+        const images = [...uniqueImages, ...uniqueImages.slice(0,10)]; // Cycle without excess duplicates
 
         const journeyLabels = ["Months of Hugs", "Weeks of Joy", "Days of Care", "Hours of Love", "Mins of Laughs", "Secs of Magic"];
         const countLabels = ["Months of Eagerness", "Weeks of Waiting", "Days of Excitement", "Hours of Love", "Mins of Longing", "Secs of Magic"];
@@ -559,11 +560,37 @@
             return next;
         }
 
-        function updateUI() {
-            const now = new Date();
-            
-            const jDiff = calculateDiff(START_DATE, now);
-            jDiff.forEach((val, i) => {
+        let cachedJDiff = [0,0,0,0,0,0];
+        let cachedCDiff = [0,0,0,0,0,0];
+        let lastCompute = 0;
+        const COMPUTE_INTERVAL = 1000; // Compute diffs per second max
+
+        let lastUpdate = 0;
+        const TARGET_FPS = 30;
+        const FRAME_TIME = 1000 / TARGET_FPS;
+
+        function updateUI(timestamp = 0) {
+            if (timestamp - lastUpdate < FRAME_TIME) {
+                requestAnimationFrame(updateUI);
+                return;
+            }
+            lastUpdate = timestamp;
+
+            // Throttle heavy compute
+            if (timestamp - lastCompute > COMPUTE_INTERVAL) {
+                const now = new Date();
+                cachedJDiff = calculateDiff(START_DATE, now);
+                
+                const yearsPassed = Math.floor(cachedJDiff[0] / 12);
+                const yearsSpan = document.getElementById('years-text');
+                if(yearsSpan) yearsSpan.textContent = `${yearsPassed} Years Of Journey`;
+
+                const nextAnni = getNextAnniversary(START_DATE);
+                cachedCDiff = calculateDiff(now, nextAnni);
+                lastCompute = timestamp;
+            }
+
+            cachedJDiff.forEach((val, i) => {
                 const el = document.getElementById(`j-${i}`);
                 if(el) {
                     let displayVal = val;
@@ -574,13 +601,7 @@
                 }
             });
 
-            const yearsPassed = Math.floor(jDiff[0] / 12);
-            const yearsSpan = document.getElementById('years-text');
-            if(yearsSpan) yearsSpan.textContent = `${yearsPassed} Years Of Journey`;
-
-            const nextAnni = getNextAnniversary(START_DATE);
-            const cDiff = calculateDiff(now, nextAnni);
-            cDiff.forEach((val, i) => {
+            cachedCDiff.forEach((val, i) => {
                 const el = document.getElementById(`c-${i}`);
                 if(el) {
                     if(val.toString().length > 6) el.style.fontSize = "18px";
@@ -599,16 +620,30 @@
         const theta = 360 / cellCount;
         let radius = 0;
         
-        images.forEach((src) => {
+        // Lazy load images + async decoding
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    img.src = img.dataset.src;
+                    img.decoding = 'async';
+                    img.loading = 'lazy';
+                    img.setAttribute('draggable', 'false');
+                    img.alt = "memory";
+                    observer.unobserve(img);
+                }
+            });
+        }, { root: document.querySelector('.scene'), threshold: 0.1 });
+
+        images.forEach((src, index) => {
             const cell = document.createElement('div');
             cell.className = 'carousel__cell';
             const img = document.createElement('img');
-            img.src = src;
-            img.setAttribute('draggable', 'false');
-            img.alt = "memory";
-            // Maintain aspect ratio: object-fit cover already ensures ratio, cell size is fixed proportion
+            img.dataset.src = src; // Lazy src
+            img.classList.add('lazy-img');
             cell.appendChild(img);
             carousel.appendChild(cell);
+            observer.observe(img);
         });
         const cells = document.querySelectorAll('.carousel__cell');
 
@@ -649,13 +684,15 @@
             carousel.style.transition = 'none';
         });
 
+        let dragStartTime = 0;
         window.addEventListener('pointermove', (e) => {
             if (!isDragging) return;
-            const deltaX = (e.clientX - lastX) * dragSensitivity; // Reduced sensitivity
+            const deltaX = (e.clientX - lastX) * dragSensitivity;
             velocityX = deltaX;
             currentRotation += deltaX;
             rotateCarousel(currentRotation);
             lastX = e.clientX;
+            dragStartTime = performance.now();
         });
 
         window.addEventListener('pointerup', () => {
@@ -678,9 +715,18 @@
             requestAnimationFrame(inertia);
         });
 
-        function autoSpin() {
-            if (isAutoSpinning) {
-                autoSpinAngle += 0.2;
+        let lastSpin = 0;
+        const SPIN_FRAME_TIME = 33; // ~30fps
+
+        function autoSpin(timestamp = 0) {
+            if (document.visibilityState === 'visible' && isAutoSpinning && 
+                (performance.now() - dragStartTime > 2000)) {
+                if (timestamp - lastSpin < SPIN_FRAME_TIME) {
+                    requestAnimationFrame(autoSpin);
+                    return;
+                }
+                lastSpin = timestamp;
+                autoSpinAngle += 0.15; // Slightly slower
                 currentRotation = autoSpinAngle;
                 carousel.style.transition = 'none';
                 rotateCarousel(currentRotation);
@@ -768,7 +814,7 @@
             height = bgCanvas.height = window.innerHeight;
             loveElements = [];
             const iconsCount = Math.floor(width / 35) + 18;
-            for(let i=0; i<iconsCount; i++) {
+            for(let i=0; i<Math.min(iconsCount, 25); i++) { // Cap hearts
                 loveElements.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
@@ -781,7 +827,7 @@
                     rotSpeed: (Math.random() - 0.5) * 0.015
                 });
             }
-            for(let i=0;i<80;i++) {
+            for(let i=0;i<25;i++) { // Reduced sparkles 80→25
                 loveElements.push({
                     x: Math.random() * width,
                     y: Math.random() * height,
@@ -798,7 +844,20 @@
         window.addEventListener('resize', resizeBg);
         resizeBg();
 
-        function drawLoveBg() {
+        let lastBg = 0;
+        const BG_FRAME_TIME = 33; // 30fps
+
+        function drawLoveBg(timestamp = 0) {
+            if (document.visibilityState !== 'visible') {
+                requestAnimationFrame(drawLoveBg);
+                return;
+            }
+            if (timestamp - lastBg < BG_FRAME_TIME) {
+                requestAnimationFrame(drawLoveBg);
+                return;
+            }
+            lastBg = timestamp;
+
             bgCtx.clearRect(0, 0, width, height);
             loveElements.forEach(el => {
                 el.x += el.speedX;
